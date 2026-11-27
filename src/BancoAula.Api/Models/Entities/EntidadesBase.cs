@@ -1,0 +1,7 @@
+namespace BancoAula.Api.Models.Entities;
+public class Agencia { public int Id { get; set; } public string Nome { get; set; } = null!; public string Cidade { get; set; } = null!; public ICollection<Conta> Contas { get; set; } = new List<Conta>(); }
+public class Cliente { public int Id { get; set; } public string Nome { get; set; } = null!; public string Cpf { get; set; } = null!; public string Email { get; set; } = null!; public string Cidade { get; set; } = null!; public ICollection<Conta> Contas { get; set; } = new List<Conta>(); }
+public enum TipoConta { Corrente, Poupanca, Salario }
+public enum TipoTransacao { Deposito, Saque, TransferenciaEnviada, TransferenciaRecebida, Tarifa, Emprestimo, PagamentoParcela, PagamentoFatura }
+public class Conta { public int Id { get; set; } public int ClienteId { get; set; } public Cliente Cliente { get; set; } = null!; public int AgenciaId { get; set; } public Agencia Agencia { get; set; } = null!; public string Numero { get; set; } = null!; public TipoConta Tipo { get; set; } public decimal Saldo { get; set; } public bool Ativa { get; set; } public ICollection<Transacao> Transacoes { get; set; } = new List<Transacao>(); }
+public class Transacao { public int Id { get; set; } public int ContaId { get; set; } public Conta Conta { get; set; } = null!; public string Descricao { get; set; } = null!; public TipoTransacao Tipo { get; set; } public decimal Valor { get; set; } public DateTime DataHora { get; set; } }
