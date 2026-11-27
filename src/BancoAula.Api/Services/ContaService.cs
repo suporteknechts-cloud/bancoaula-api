@@ -31,6 +31,8 @@ public class ContaService(IContaRepository repositorio) : IContaService
     {
         var conta = await Obter(id);
         if (conta.Saldo != 0) throw new RegraException("A conta deve ter saldo zero para ser encerrada.", 422);
+        if (await repositorio.PossuiEmprestimoAberto(id)) throw new RegraException("A conta possui empréstimo em aberto.", 422);
         conta.Ativa = false; await repositorio.Salvar();
     }
 }
+

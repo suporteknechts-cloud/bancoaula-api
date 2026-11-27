@@ -32,6 +32,8 @@ public class ClienteService(IClienteRepository repositorio) : IClienteService
     {
         var cliente = await Obter(id);
         if (await repositorio.PossuiContas(id)) throw new RegraException("O cliente possui contas vinculadas.", 409);
+        if (await repositorio.PossuiEmprestimos(id)) throw new RegraException("O cliente possui empréstimos vinculados.", 409);
         repositorio.Remover(cliente); await repositorio.Salvar();
     }
 }
+

@@ -65,3 +65,43 @@ VALUES (N'20261127230808_CriacaoInicial', N'10.0.12');
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+CREATE TABLE [Emprestimos] (
+    [Id] int NOT NULL IDENTITY,
+    [ClienteId] int NOT NULL,
+    [ContaId] int NOT NULL,
+    [ValorSolicitado] decimal(12,2) NOT NULL,
+    [TaxaJurosMensal] decimal(8,6) NOT NULL,
+    [QuantidadeParcelas] int NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [MotivoRecusa] nvarchar(max) NULL,
+    [DataSolicitacao] datetime2 NOT NULL,
+    CONSTRAINT [PK_Emprestimos] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Emprestimos_Clientes_ClienteId] FOREIGN KEY ([ClienteId]) REFERENCES [Clientes] ([Id]) ON DELETE NO ACTION,
+    CONSTRAINT [FK_Emprestimos_Contas_ContaId] FOREIGN KEY ([ContaId]) REFERENCES [Contas] ([Id]) ON DELETE NO ACTION
+);
+
+CREATE TABLE [Parcelas] (
+    [Id] int NOT NULL IDENTITY,
+    [EmprestimoId] int NOT NULL,
+    [Numero] int NOT NULL,
+    [Valor] decimal(12,2) NOT NULL,
+    [DataVencimento] datetime2 NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [DataPagamento] datetime2 NULL,
+    CONSTRAINT [PK_Parcelas] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Parcelas_Emprestimos_EmprestimoId] FOREIGN KEY ([EmprestimoId]) REFERENCES [Emprestimos] ([Id]) ON DELETE NO ACTION
+);
+
+CREATE INDEX [IX_Emprestimos_ClienteId] ON [Emprestimos] ([ClienteId]);
+
+CREATE INDEX [IX_Emprestimos_ContaId] ON [Emprestimos] ([ContaId]);
+
+CREATE UNIQUE INDEX [IX_Parcelas_EmprestimoId_Numero] ON [Parcelas] ([EmprestimoId], [Numero]);
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20261127235001_AdicionaEmprestimos', N'10.0.12');
+
+COMMIT;
+GO
+
