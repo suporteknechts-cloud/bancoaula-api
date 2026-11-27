@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<BancoContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Padrao")));
 builder.Services.AddScoped<IAgenciaRepository, AgenciaRepository>();
 builder.Services.AddScoped<IAgenciaService, AgenciaService>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -29,5 +31,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
 
 
