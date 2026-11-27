@@ -14,6 +14,8 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IContaRepository, ContaRepository>();
 builder.Services.AddScoped<IContaService, ContaService>();
+builder.Services.AddScoped<IMovimentacaoRepository, MovimentacaoRepository>();
+builder.Services.AddScoped<IMovimentacaoService, MovimentacaoService>();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -33,6 +35,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
 
 
 
