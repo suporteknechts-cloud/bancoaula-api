@@ -27,12 +27,13 @@ public class ContaService(IContaRepository repositorio) : IContaService
         catch (DbUpdateException ex) when (ex.InnerException is SqlException sql && (sql.Number == 2601 || sql.Number == 2627)) { throw new RegraException("Número de conta já cadastrado.", 409); }
         return Resposta(await Obter(conta.Id));
     }
-    public async Task Encerrar(int id)
+    public Task Encerrar(int id) => repositorio.EncerrarComBloqueio(id, (conta, emprestimoAberto) =>
     {
-        var conta = await Obter(id);
+        if (conta is null) throw new RegraException("Conta não encontrada.", 404);
         if (conta.Saldo != 0) throw new RegraException("A conta deve ter saldo zero para ser encerrada.", 422);
-        if (await repositorio.PossuiEmprestimoAberto(id)) throw new RegraException("A conta possui empréstimo em aberto.", 422);
-        conta.Ativa = false; await repositorio.Salvar();
-    }
+        if (emprestimoAberto) throw new RegraException("A conta possui empréstimo em aberto.", 422);
+        conta.Ativa = false;
+    });
 }
+
 
