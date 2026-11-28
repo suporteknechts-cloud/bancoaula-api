@@ -43,6 +43,53 @@ namespace BancoAula.Api.Data.Migrations
                     b.ToTable("Agencias");
                 });
 
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Cartao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ContaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataEmissao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Limite")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal>("LimiteDisponivel")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<string>("NomeImpresso")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContaId");
+
+                    b.HasIndex("Numero")
+                        .IsUnique();
+
+                    b.ToTable("Cartoes");
+                });
+
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Cliente", b =>
                 {
                     b.Property<int>("Id")
@@ -74,6 +121,38 @@ namespace BancoAula.Api.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Clientes");
+                });
+
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.CompraCartao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CartaoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataCompra")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Paga")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartaoId");
+
+                    b.ToTable("ComprasCartao");
                 });
 
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Conta", b =>
@@ -235,6 +314,28 @@ namespace BancoAula.Api.Data.Migrations
                     b.ToTable("Transacoes");
                 });
 
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Cartao", b =>
+                {
+                    b.HasOne("BancoAula.Api.Models.Entities.Conta", "Conta")
+                        .WithMany()
+                        .HasForeignKey("ContaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conta");
+                });
+
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.CompraCartao", b =>
+                {
+                    b.HasOne("BancoAula.Api.Models.Entities.Cartao", "Cartao")
+                        .WithMany("Compras")
+                        .HasForeignKey("CartaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cartao");
+                });
+
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Conta", b =>
                 {
                     b.HasOne("BancoAula.Api.Models.Entities.Agencia", "Agencia")
@@ -298,6 +399,11 @@ namespace BancoAula.Api.Data.Migrations
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Agencia", b =>
                 {
                     b.Navigation("Contas");
+                });
+
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Cartao", b =>
+                {
+                    b.Navigation("Compras");
                 });
 
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Cliente", b =>

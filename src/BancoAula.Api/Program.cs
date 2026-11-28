@@ -20,6 +20,8 @@ builder.Services.AddScoped<ITransferenciaRepository, TransferenciaRepository>();
 builder.Services.AddScoped<ITransferenciaService, TransferenciaService>();
 builder.Services.AddScoped<IEmprestimoRepository, EmprestimoRepository>();
 builder.Services.AddScoped<IEmprestimoService, EmprestimoService>();
+builder.Services.AddScoped<ICartaoRepository, CartaoRepository>();
+builder.Services.AddScoped<ICartaoService, CartaoService>();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -39,6 +41,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
 
 
 
