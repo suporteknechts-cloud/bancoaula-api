@@ -16,6 +16,16 @@ public class EmprestimoRepository(BancoContext banco) : IEmprestimoRepository
         if (transacao is not null) banco.Transacoes.Add(transacao);
         await banco.SaveChangesAsync(); await tx.CommitAsync(); return emprestimo;
     }
+    public async Task<T> Pagar<T>(int emprestimoId, Func<Emprestimo?, Conta?, (T Resultado, Transacao Transacao)> operacao)
+    {
+        var contaId = await banco.Emprestimos.AsNoTracking().Where(e => e.Id == emprestimoId).Select(e => (int?)e.ContaId).SingleOrDefaultAsync();
+        await using var tx = await banco.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        Conta? conta = null;
+        if (contaId.HasValue) conta = await banco.Contas.FromSqlInterpolated($"SELECT * FROM Contas WITH (UPDLOCK, ROWLOCK) WHERE Id = {contaId.Value}").SingleOrDefaultAsync();
+        var emprestimo = await banco.Emprestimos.FromSqlInterpolated($"SELECT * FROM Emprestimos WITH (UPDLOCK, ROWLOCK) WHERE Id = {emprestimoId}").Include(e => e.Parcelas).SingleOrDefaultAsync();
+        var (resultado, transacao) = operacao(emprestimo, conta);
+        banco.Transacoes.Add(transacao); await banco.SaveChangesAsync(); await tx.CommitAsync(); return resultado;
+    }
     public Task<Emprestimo?> Buscar(int id) => banco.Emprestimos.AsNoTracking().Include(e => e.Parcelas).SingleOrDefaultAsync(e => e.Id == id);
     public Task<List<Emprestimo>> Listar(int? clienteId, StatusEmprestimo? status)
     {
@@ -25,3 +35,5 @@ public class EmprestimoRepository(BancoContext banco) : IEmprestimoRepository
         return q.OrderByDescending(e => e.DataSolicitacao).ThenByDescending(e => e.Id).ToListAsync();
     }
 }
+
+

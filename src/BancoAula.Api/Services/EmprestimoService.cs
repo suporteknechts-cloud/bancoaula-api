@@ -32,6 +32,22 @@ public class EmprestimoService(IEmprestimoRepository repositorio) : IEmprestimoS
         });
         return Resposta(resultado);
     }
+    public Task<PagamentoParcelaResposta> PagarParcela(int id, int numero) => repositorio.Pagar(id, (emprestimo, conta) =>
+    {
+        if (emprestimo is null) throw new RegraException("Empréstimo não encontrado.", 404);
+        var parcela = emprestimo.Parcelas.SingleOrDefault(p => p.Numero == numero) ?? throw new RegraException("Parcela não encontrada.", 404);
+        if (emprestimo.Status != StatusEmprestimo.Aprovado) throw new RegraException("O empréstimo não está em aberto.", 422);
+        if (parcela.Status == StatusParcela.Paga) throw new RegraException("Parcela já paga.", 422);
+        if (emprestimo.Parcelas.Any(p => p.Numero < numero && p.Status == StatusParcela.Pendente)) throw new RegraException("Pague as parcelas anteriores primeiro.", 422);
+        if (conta is null) throw new RegraException("Conta não encontrada.", 404);
+        if (!conta.Ativa) throw new RegraException("Conta inativa.", 422);
+        if (conta.Saldo < parcela.Valor) throw new RegraException("Saldo insuficiente.", 422);
+        conta.Saldo -= parcela.Valor;
+        var agora = DateTime.UtcNow; parcela.Status = StatusParcela.Paga; parcela.DataPagamento = agora;
+        if (emprestimo.Parcelas.All(p => p.Status == StatusParcela.Paga)) emprestimo.Status = StatusEmprestimo.Quitado;
+        var transacao = new Transacao { ContaId = conta.Id, Descricao = $"Pagamento da parcela {numero} do empréstimo {id}", Tipo = TipoTransacao.PagamentoParcela, Valor = parcela.Valor, DataHora = agora };
+        return (new PagamentoParcelaResposta(id, numero, parcela.Valor, conta.Saldo, emprestimo.Status, agora), transacao);
+    });
     public async Task<EmprestimoResposta> Buscar(int id) => Resposta(await repositorio.Buscar(id) ?? throw new RegraException("Empréstimo não encontrado.", 404));
     public async Task<List<EmprestimoResposta>> Listar(int? clienteId, StatusEmprestimo? status)
     {
@@ -39,3 +55,4 @@ public class EmprestimoService(IEmprestimoRepository repositorio) : IEmprestimoS
         return (await repositorio.Listar(clienteId, status)).Select(Resposta).ToList();
     }
 }
+
