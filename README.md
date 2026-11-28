@@ -30,11 +30,12 @@ A conexão padrão em `src/BancoAula.Api/appsettings.json` usa `localhost\SQLEXP
 
 ```powershell
 $env:ConnectionStrings__Padrao = 'Server=localhost\SQLEXPRESS;Database=BancoAulaProjeto;Trusted_Connection=True;TrustServerCertificate=True'
+dotnet user-secrets set 'Jwt:Chave' 'SUBSTITUA-POR-UMA-CHAVE-ALEATORIA-LONGA-E-PRIVADA' --project src/BancoAula.Api
 dotnet ef database update --project src/BancoAula.Api
 dotnet run --project src/BancoAula.Api
 ```
 
-Acesse `http://localhost:5161/swagger` no ambiente Development. Se outra porta for exibida no terminal, use-a. O documento OpenAPI fica em `/openapi/v1.json`. O banco é criado pelas migrations se o usuário tiver permissão. Para gerar novamente o script SQL consolidado:
+Defina uma chave aleatória e privada com pelo menos 32 bytes no lugar do exemplo; nunca a envie ao repositório. Em produção, use variável de ambiente `Jwt__Chave`. Acesse `http://localhost:5161/swagger` no ambiente Development. Se outra porta for exibida no terminal, use-a. O documento OpenAPI fica em `/openapi/v1.json`. O banco é criado pelas migrations se o usuário tiver permissão. Para gerar novamente o script SQL consolidado:
 
 ```powershell
 dotnet ef migrations script --project src/BancoAula.Api --output database/001-criacao-inicial.sql
@@ -51,7 +52,8 @@ O script em `database/` contém as migrations disponíveis; execute-o em um banc
 | Contas | `POST`, `GET /api/contas`; `GET /api/contas/{id}`; `PATCH /api/contas/{id}/encerrar` |
 | Movimentações | `POST /api/contas/{id}/depositos`, `/saques`; `POST /api/transferencias`; `GET /api/contas/{id}/extrato` |
 | Empréstimos | `POST`, `GET /api/emprestimos`; `GET /api/emprestimos/{id}`; `POST /api/emprestimos/{id}/parcelas/{numero}/pagamento` |
-| Cartões | `POST /api/cartoes`; `GET /api/cartoes/{id}`; `POST /api/cartoes/{id}/compras`; `GET /api/cartoes/{id}/fatura?mes=11&ano=2026`; `POST /api/cartoes/{id}/faturas/pagamento` |
+| Autenticação | `POST /api/autenticacao/cadastro`; `POST /api/autenticacao/login` |
+| Cartões | `POST /api/cartoes`; `GET /api/cartoes/{id}`; `PATCH /api/cartoes/{id}/bloquear` e `/desbloquear`; `POST /api/cartoes/{id}/compras`; `GET /api/cartoes/{id}/fatura?mes=11&ano=2026`; `POST /api/cartoes/{id}/faturas/pagamento` |
 
 A listagem de contas aceita `clienteId`, `agenciaId`, `tipo` e `ativa`; o extrato aceita `de`, `ate` (datas `AAAA-MM-DD`, inclusivas) e `tipo`; a listagem de empréstimos aceita `clienteId` e `status`. O Swagger apresenta os modelos das requisições e respostas. Envie valores monetários como números JSON, por exemplo `{"valor":100.00}`.
 
@@ -65,12 +67,14 @@ A listagem de contas aceita `clienteId`, `agenciaId`, `tipo` e `ativa`; o extrat
 
 ## Exemplo de fluxo no Swagger
 
-1. Cadastre uma agência e um cliente com CPF de 11 dígitos e e-mail válido; anote os IDs.
-2. Abra duas contas para o cliente. Deposite na primeira, saque e transfira para a segunda; consulte o extrato.
-3. Para solicitar R$ 10.000 em 12 parcelas, mantenha pelo menos R$ 1.000 somados nas contas ativas antes do pedido. Pague a primeira parcela pela rota de pagamento.
-4. Emita um cartão para a conta corrente, registre uma compra e pague a fatura do mês/ano UTC da compra, após garantir saldo suficiente.
-5. Experimente um saque acima do saldo e uma consulta a ID inexistente para observar os erros tratados.
+1. Cadastre um usuário em `/api/autenticacao/cadastro`, faça login e envie o token como `Authorization: Bearer <token>` nas rotas protegidas. Use um cliente HTTP que permita definir esse cabeçalho.
+2. Cadastre uma agência e um cliente com CPF de 11 dígitos e e-mail válido; anote os IDs.
+3. Abra duas contas para o cliente. Deposite na primeira, saque e transfira para a segunda; consulte o extrato.
+4. Para solicitar R$ 10.000 em 12 parcelas, mantenha pelo menos R$ 1.000 somados nas contas ativas antes do pedido. Pague a primeira parcela pela rota de pagamento.
+5. Emita um cartão para a conta corrente, registre uma compra e pague a fatura do mês/ano UTC da compra, após garantir saldo suficiente.
+6. Experimente um saque acima do saldo e uma consulta a ID inexistente para observar os erros tratados.
 
 ## Limitações e apresentação
 
-Este é um projeto didático, sem autenticação JWT ou integração com provedores financeiros. O bloqueio/desbloqueio de cartões é funcionalidade bônus ainda não implementada. O vídeo de demonstração deve ser adicionado aqui quando estiver disponível.
+Este é um projeto didático sem integração com provedores financeiros. O login JWT protege os endpoints de movimentações, empréstimos e cartões; a aplicação ainda não limita os dados por usuário, portanto não é adequada para uso bancário real. O vídeo de demonstração deve ser adicionado aqui quando estiver disponível.
+

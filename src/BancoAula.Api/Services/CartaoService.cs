@@ -8,6 +8,13 @@ public class CartaoService(ICartaoRepository repositorio) : ICartaoService
 {
     private static CartaoResposta Resposta(Cartao c) => new(c.Id, c.ContaId, "**** **** **** " + c.Numero[^4..], c.NomeImpresso, c.Limite, c.LimiteDisponivel, c.Status, c.DataEmissao);
     public async Task<CartaoResposta> Buscar(int id) => Resposta(await repositorio.Buscar(id) ?? throw new RegraException("Cartão não encontrado.", 404));
+    public Task AlterarStatus(int id, bool bloquear) => repositorio.AlterarStatus(id, (cartao, conta, outroAtivo) =>
+    {
+        if (cartao is null) throw new RegraException("Cartão não encontrado.", 404);
+        if (!bloquear && (conta is null || !conta.Ativa || conta.Tipo != TipoConta.Corrente)) throw new RegraException("É necessária uma conta corrente ativa para desbloquear.", 422);
+        if (!bloquear && outroAtivo) throw new RegraException("A conta já possui outro cartão ativo.", 422);
+        cartao.Status = bloquear ? StatusCartao.Bloqueado : StatusCartao.Ativo;
+    });
     private static void ValidarPeriodo(int mes, int ano)
     {
         if (mes < 1 || mes > 12 || ano < 1 || ano > 9999) throw new RegraException("Mês ou ano inválido.", 400);
@@ -69,4 +76,3 @@ public class CartaoService(ICartaoRepository repositorio) : ICartaoService
         return Resposta(cartao);
     }
 }
-
