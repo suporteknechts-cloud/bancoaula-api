@@ -67,7 +67,7 @@ A listagem de contas aceita `clienteId`, `agenciaId`, `tipo` e `ativa`; o extrat
 
 ## Exemplo de fluxo no Swagger
 
-1. Cadastre um usuário em `/api/autenticacao/cadastro`, faça login e envie o token como `Authorization: Bearer <token>` nas rotas protegidas. Use um cliente HTTP que permita definir esse cabeçalho.
+1. Cadastre um usuário em `/api/autenticacao/cadastro`, faça login e copie o token retornado e cole-o no botão **Authorize** do Swagger. Alternativamente, envie o cabeçalho `Authorization: Bearer <token>` em outro cliente HTTP.
 2. Cadastre uma agência e um cliente com CPF de 11 dígitos e e-mail válido; anote os IDs.
 3. Abra duas contas para o cliente. Deposite na primeira, saque e transfira para a segunda; consulte o extrato.
 4. Para solicitar R$ 10.000 em 12 parcelas, mantenha pelo menos R$ 1.000 somados nas contas ativas antes do pedido. Pague a primeira parcela pela rota de pagamento.
@@ -77,4 +77,5 @@ A listagem de contas aceita `clienteId`, `agenciaId`, `tipo` e `ativa`; o extrat
 ## Limitações e apresentação
 
 Este é um projeto didático sem integração com provedores financeiros. O login JWT protege os endpoints de movimentações, empréstimos e cartões; a aplicação ainda não limita os dados por usuário, portanto não é adequada para uso bancário real. O vídeo de demonstração deve ser adicionado aqui quando estiver disponível.
+
 
