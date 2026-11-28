@@ -34,6 +34,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "BancoAula API v1"));
 }
 
 app.UseAuthorization();
@@ -41,6 +42,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
 
 
 
