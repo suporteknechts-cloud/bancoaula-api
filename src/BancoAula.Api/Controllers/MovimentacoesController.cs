@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using BancoAula.Api.Dtos;
 using BancoAula.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 namespace BancoAula.Api.Controllers;
+[Authorize]
 [ApiController]
 [Route("api/contas/{id:int}")]
 public class MovimentacoesController(IMovimentacaoService service) : ControllerBase

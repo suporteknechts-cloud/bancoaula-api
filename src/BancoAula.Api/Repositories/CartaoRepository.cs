@@ -13,6 +13,16 @@ public class CartaoRepository(BancoContext banco) : ICartaoRepository
         var cartao = criar(conta, existe);
         banco.Cartoes.Add(cartao); await banco.SaveChangesAsync(); await tx.CommitAsync(); return cartao;
     }
+    public async Task AlterarStatus(int id, Action<Cartao?, Conta?, bool> alterar)
+    {
+        var contaId = await banco.Cartoes.AsNoTracking().Where(c => c.Id == id).Select(c => (int?)c.ContaId).SingleOrDefaultAsync();
+        await using var tx = await banco.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        Conta? conta = null;
+        if (contaId.HasValue) conta = await banco.Contas.FromSqlInterpolated($"SELECT * FROM Contas WITH (UPDLOCK, ROWLOCK) WHERE Id = {contaId.Value}").SingleOrDefaultAsync();
+        var cartao = await banco.Cartoes.FromSqlInterpolated($"SELECT * FROM Cartoes WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}").SingleOrDefaultAsync();
+        var outroAtivo = cartao is not null && await banco.Cartoes.AnyAsync(c => c.ContaId == cartao.ContaId && c.Id != id && c.Status == StatusCartao.Ativo);
+        alterar(cartao, conta, outroAtivo); await banco.SaveChangesAsync(); await tx.CommitAsync();
+    }
     public async Task<T> Comprar<T>(int id, Func<Cartao?, (T Resultado, CompraCartao Compra)> operacao)
     {
         await using var tx = await banco.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -33,4 +43,3 @@ public class CartaoRepository(BancoContext banco) : ICartaoRepository
     }
     public Task<Cartao?> Buscar(int id) => banco.Cartoes.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id);
 }
-

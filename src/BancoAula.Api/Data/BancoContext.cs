@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using BancoAula.Api.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 namespace BancoAula.Api.Data;
-public class BancoContext(DbContextOptions<BancoContext> options) : DbContext(options)
+public class BancoContext(DbContextOptions<BancoContext> options) : IdentityDbContext(options)
 {
     public DbSet<Agencia> Agencias => Set<Agencia>();
     public DbSet<Cliente> Clientes => Set<Cliente>();
@@ -13,11 +14,16 @@ public class BancoContext(DbContextOptions<BancoContext> options) : DbContext(op
     public DbSet<CompraCartao> ComprasCartao => Set<CompraCartao>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Cartao>().Property(x => x.Numero).HasMaxLength(16);
         modelBuilder.Entity<Cartao>().HasIndex(x => x.Numero).IsUnique();
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Cartao>().Property(x => x.NomeImpresso).HasMaxLength(100);
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Cartao>().Property(x => x.Limite).HasPrecision(12, 2);
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Cartao>().Property(x => x.LimiteDisponivel).HasPrecision(12, 2);
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Cartao>().Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
         modelBuilder.Entity<Cartao>().HasOne(x => x.Conta).WithMany().HasForeignKey(x => x.ContaId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<CompraCartao>().Property(x => x.Valor).HasPrecision(12, 2);
@@ -44,5 +50,3 @@ public class BancoContext(DbContextOptions<BancoContext> options) : DbContext(op
         modelBuilder.Entity<Transacao>().HasOne(x => x.Conta).WithMany(x => x.Transacoes).HasForeignKey(x => x.ContaId).OnDelete(DeleteBehavior.Restrict);
     }
 }
-
-

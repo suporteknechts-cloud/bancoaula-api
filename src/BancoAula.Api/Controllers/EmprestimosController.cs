@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using BancoAula.Api.Dtos;
 using BancoAula.Api.Models.Entities;
 using BancoAula.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 namespace BancoAula.Api.Controllers;
+[Authorize]
 [ApiController]
 [Route("api/emprestimos")]
 public class EmprestimosController(IEmprestimoService service) : ControllerBase
@@ -16,4 +18,3 @@ public class EmprestimosController(IEmprestimoService service) : ControllerBase
     [HttpGet, ProducesResponseType(typeof(List<EmprestimoResposta>), 200)]
     public async Task<ActionResult<List<EmprestimoResposta>>> Listar([FromQuery] int? clienteId, [FromQuery] StatusEmprestimo? status) => Ok(await service.Listar(clienteId, status));
 }
-
