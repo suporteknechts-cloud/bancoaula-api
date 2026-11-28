@@ -105,3 +105,40 @@ VALUES (N'20261127235001_AdicionaEmprestimos', N'10.0.12');
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+CREATE TABLE [Cartoes] (
+    [Id] int NOT NULL IDENTITY,
+    [ContaId] int NOT NULL,
+    [Numero] nvarchar(16) NOT NULL,
+    [NomeImpresso] nvarchar(100) NOT NULL,
+    [Limite] decimal(12,2) NOT NULL,
+    [LimiteDisponivel] decimal(12,2) NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [DataEmissao] datetime2 NOT NULL,
+    CONSTRAINT [PK_Cartoes] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Cartoes_Contas_ContaId] FOREIGN KEY ([ContaId]) REFERENCES [Contas] ([Id]) ON DELETE NO ACTION
+);
+
+CREATE TABLE [ComprasCartao] (
+    [Id] int NOT NULL IDENTITY,
+    [CartaoId] int NOT NULL,
+    [Descricao] nvarchar(max) NOT NULL,
+    [Valor] decimal(12,2) NOT NULL,
+    [DataCompra] datetime2 NOT NULL,
+    [Paga] bit NOT NULL,
+    CONSTRAINT [PK_ComprasCartao] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_ComprasCartao_Cartoes_CartaoId] FOREIGN KEY ([CartaoId]) REFERENCES [Cartoes] ([Id]) ON DELETE NO ACTION
+);
+
+CREATE INDEX [IX_Cartoes_ContaId] ON [Cartoes] ([ContaId]);
+
+CREATE UNIQUE INDEX [IX_Cartoes_Numero] ON [Cartoes] ([Numero]);
+
+CREATE INDEX [IX_ComprasCartao_CartaoId] ON [ComprasCartao] ([CartaoId]);
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20261128001355_AdicionaCartoes', N'10.0.12');
+
+COMMIT;
+GO
+

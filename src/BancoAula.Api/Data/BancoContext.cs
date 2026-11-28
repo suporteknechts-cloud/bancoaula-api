@@ -9,8 +9,19 @@ public class BancoContext(DbContextOptions<BancoContext> options) : DbContext(op
     public DbSet<Transacao> Transacoes => Set<Transacao>();
     public DbSet<Emprestimo> Emprestimos => Set<Emprestimo>();
     public DbSet<Parcela> Parcelas => Set<Parcela>();
+    public DbSet<Cartao> Cartoes => Set<Cartao>();
+    public DbSet<CompraCartao> ComprasCartao => Set<CompraCartao>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Cartao>().Property(x => x.Numero).HasMaxLength(16);
+        modelBuilder.Entity<Cartao>().HasIndex(x => x.Numero).IsUnique();
+        modelBuilder.Entity<Cartao>().Property(x => x.NomeImpresso).HasMaxLength(100);
+        modelBuilder.Entity<Cartao>().Property(x => x.Limite).HasPrecision(12, 2);
+        modelBuilder.Entity<Cartao>().Property(x => x.LimiteDisponivel).HasPrecision(12, 2);
+        modelBuilder.Entity<Cartao>().Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+        modelBuilder.Entity<Cartao>().HasOne(x => x.Conta).WithMany().HasForeignKey(x => x.ContaId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<CompraCartao>().Property(x => x.Valor).HasPrecision(12, 2);
+        modelBuilder.Entity<CompraCartao>().HasOne(x => x.Cartao).WithMany(x => x.Compras).HasForeignKey(x => x.CartaoId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Emprestimo>().Property(x => x.ValorSolicitado).HasPrecision(12, 2);
         modelBuilder.Entity<Emprestimo>().Property(x => x.TaxaJurosMensal).HasPrecision(8, 6);
         modelBuilder.Entity<Emprestimo>().Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
@@ -33,4 +44,5 @@ public class BancoContext(DbContextOptions<BancoContext> options) : DbContext(op
         modelBuilder.Entity<Transacao>().HasOne(x => x.Conta).WithMany(x => x.Transacoes).HasForeignKey(x => x.ContaId).OnDelete(DeleteBehavior.Restrict);
     }
 }
+
 
