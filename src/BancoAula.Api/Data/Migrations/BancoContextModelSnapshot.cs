@@ -119,6 +119,88 @@ namespace BancoAula.Api.Data.Migrations
                     b.ToTable("Contas");
                 });
 
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Emprestimo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ContaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataSolicitacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MotivoRecusa")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("QuantidadeParcelas")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TaxaJurosMensal")
+                        .HasPrecision(8, 6)
+                        .HasColumnType("decimal(8,6)");
+
+                    b.Property<decimal>("ValorSolicitado")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("ContaId");
+
+                    b.ToTable("Emprestimos");
+                });
+
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Parcela", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("DataPagamento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataVencimento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmprestimoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Numero")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmprestimoId", "Numero")
+                        .IsUnique();
+
+                    b.ToTable("Parcelas");
+                });
+
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Transacao", b =>
                 {
                     b.Property<int>("Id")
@@ -172,6 +254,36 @@ namespace BancoAula.Api.Data.Migrations
                     b.Navigation("Cliente");
                 });
 
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Emprestimo", b =>
+                {
+                    b.HasOne("BancoAula.Api.Models.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BancoAula.Api.Models.Entities.Conta", "Conta")
+                        .WithMany()
+                        .HasForeignKey("ContaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Conta");
+                });
+
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Parcela", b =>
+                {
+                    b.HasOne("BancoAula.Api.Models.Entities.Emprestimo", "Emprestimo")
+                        .WithMany("Parcelas")
+                        .HasForeignKey("EmprestimoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Emprestimo");
+                });
+
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Transacao", b =>
                 {
                     b.HasOne("BancoAula.Api.Models.Entities.Conta", "Conta")
@@ -196,6 +308,11 @@ namespace BancoAula.Api.Data.Migrations
             modelBuilder.Entity("BancoAula.Api.Models.Entities.Conta", b =>
                 {
                     b.Navigation("Transacoes");
+                });
+
+            modelBuilder.Entity("BancoAula.Api.Models.Entities.Emprestimo", b =>
+                {
+                    b.Navigation("Parcelas");
                 });
 #pragma warning restore 612, 618
         }

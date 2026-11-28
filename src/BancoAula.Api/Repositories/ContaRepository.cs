@@ -15,9 +15,19 @@ public class ContaRepository(BancoContext banco) : IContaRepository
         return q.OrderBy(x => x.Id).ToListAsync();
     }
     public Task<Conta?> Buscar(int id) => ComDados().FirstOrDefaultAsync(x => x.Id == id);
+    public async Task EncerrarComBloqueio(int id, Action<Conta?, bool> validar)
+    {
+        await using var tx = await banco.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        var conta = await banco.Contas.FromSqlInterpolated($"SELECT * FROM Contas WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}").SingleOrDefaultAsync();
+        var aberto = conta is not null && await banco.Emprestimos.AnyAsync(x => x.ContaId == id && x.Status == StatusEmprestimo.Aprovado);
+        validar(conta, aberto);
+        await banco.SaveChangesAsync(); await tx.CommitAsync();
+    }
     public Task<bool> NumeroExiste(string numero) => banco.Contas.AnyAsync(x => x.Numero == numero);
     public Task<bool> ClienteExiste(int id) => banco.Clientes.AnyAsync(x => x.Id == id);
     public Task<bool> AgenciaExiste(int id) => banco.Agencias.AnyAsync(x => x.Id == id);
     public async Task Adicionar(Conta conta) => await banco.Contas.AddAsync(conta);
     public Task Salvar() => banco.SaveChangesAsync();
 }
+
+
